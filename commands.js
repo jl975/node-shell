@@ -6,34 +6,38 @@ module.exports = {
 		done(process.env.PWD);
 	},
 	date: function(stdin, _, done) {
-		done(String(new Date()));
+		done(Date());
 	},
 
 	ls: function(stdin, _, done) {
 		fs.readdir('.', function(err, files) {
-			var output = '';
 			if (err) throw err;
-			files.forEach(function(file) {
-				output += file.toString()+'\n';
-				//process.stdout.write(file.toString() + '\n');
-			})
-			done(output);
+			done(files.map(function(file){return file.toString()}).join('\n'));
 		});
 	},
 
-	echo: function(stdin, param, done) {
-		var output = '';
-		var isEnv = /^\$([A-Z]+)$/.exec(param);
-		if (isEnv) output = process.env[isEnv[1]]
-		else output = param;
-		done(output);
+	echo: function(stdin, params, done) {
+		params = params.split(' ');
+		var output = [];
+		params.forEach(function(arg) {
+			var isEnv = /^\$([A-Z]+)$/.exec(arg);
+			if (isEnv) output.push(process.env[isEnv[1]]);
+			else output.push(arg);	
+		});
+		done(output.join('\n'));
 	},
 
-	cat: function(stdin, file, done) {
-		fs.readFile(file, 'utf8', function(err,data){
-			if(err) throw err;
-			// process.stdout.write(data);
-			done(data);
+	cat: function(stdin, filenames, done) {
+		filenames = filenames.split(' ');
+		var texts = [];
+		var count = 0;
+		filenames.forEach(function(file, i) {
+			fs.readFile(file, 'utf8', function(err,data){
+				if(err) throw err;
+				texts[i] = data;
+				count++;
+				if (count == filenames.length) done(texts.join('\n'));
+			});
 		});
 	},
 
@@ -110,8 +114,7 @@ module.exports = {
 						i--;
 					}
 				}
-				var output = lines.join('\n');
-				done(output);
+				done(lines.join('\n'));
 			});
 		}
 		else if (stdin) {
