@@ -11,17 +11,5 @@ process.stdin.on('data', function(data) {
 
 	if (commands.hasOwnProperty(cmd.toLowerCase())) {
 		commands[cmd](param);
-
-	
-
 	}
-
-
-
-
-
-
-
 });
-
-
